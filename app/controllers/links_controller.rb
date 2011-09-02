@@ -4,7 +4,7 @@ class LinksController < ApplicationController
   # GET /links
   # GET /links.xml
   def index
-    @links = OTRS::Link.all
+    @links = OTRS::Link.where(params[:q])
 
     respond_to do |wants|
       wants.html # index.html.erb
