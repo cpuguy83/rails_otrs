@@ -99,9 +99,4 @@ class OTRS::Ticket < OTRS
   def where(attributes)
     self.class.where(attributes)
   end
-  
-  def self.all(attributes={})
-    params = "Object=TicketObject&Method=TicketSearch&Data={\"TicketNumber\":\"%\"}"
-    connect(params)
-  end
 end
