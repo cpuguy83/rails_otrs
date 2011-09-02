@@ -4,7 +4,7 @@ class TicketsController < ApplicationController
   # GET /tickets
   # GET /tickets.xml
   def index
-    @tickets = OTRS::Ticket.all
+    @tickets = OTRS::Ticket.where(params[:q])
 
     respond_to do |wants|
       wants.html # index.html.erb
