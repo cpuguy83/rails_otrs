@@ -4,7 +4,7 @@ class TicketsController < ApplicationController
   # GET /tickets
   # GET /tickets.xml
   def index
-    @tickets = OTRS::Ticket.find(809)
+    @tickets = OTRS::Ticket.all
 
     respond_to do |wants|
       wants.html # index.html.erb
@@ -79,7 +79,6 @@ class TicketsController < ApplicationController
   # DELETE /tickets/1.xml
   def destroy
     @ticket.destroy
-
     respond_to do |wants|
       wants.html { redirect_to(tickets_url) }
       wants.xml  { head :ok }
