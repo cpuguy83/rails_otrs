@@ -3,7 +3,7 @@ class ArticlesController < ApplicationController
   # GET /articles
   # GET /articles.xml
   def index
-    @articles = OTRS::Ticket::Article.all
+    @articles = OTRS::Ticket::Article.where(params[:q])
 
     respond_to do |wants|
       wants.html # index.html.erb
