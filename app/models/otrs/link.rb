@@ -6,7 +6,7 @@ class OTRS::Link < OTRS
   
   def initialize(attributes = {})
     attributes.each do |name, value|
-      OTRS::LinkObject.set_accessors(name.to_s.underscore)
+      OTRS::Link.set_accessors(name.to_s.underscore)
       send("#{name.to_s.underscore.to_sym}=", value)
     end
   end
@@ -23,13 +23,23 @@ class OTRS::Link < OTRS
   
   def self.where(attributes)
     # Returns list of link objects as Source => Target
+    # Haven't decided if I want this to return the link object or what is being linked to
+    attributes.each do |key,value|
+      attributes[key.to_s.camelize.to_sym] = value
+      attributes.delete(key.to_s.underscore.to_sym)
+    end
     data = attributes.to_json
     params = "Object=LinkObject&Method=LinkKeyList&Data=#{data}"
     a = connect(params)
     a = Hash[*a]
     b = []
     a.each do |key,value|
-      b << key
+      c = {}
+      c[:target_id] = "#{key}"
+      c[:target_object] = attributes[:Object2]
+      c[:source_object] = attributes[:Object1]
+      c[:source_id] = attributes[:Key1]
+      b << self.new(c)
     end
     b
   end
