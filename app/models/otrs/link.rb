@@ -26,15 +26,14 @@ class OTRS::Link < OTRS
   def self.create(attributes)
     attributes[:state] ||= 'Valid'
     attributes[:user_id] ||= 1
-    
+    tmp = {}
     attributes.each do |key,value|
       if key == :user_id
-        attributes[:UserID] = value
+        tmp[:UserID] = value
       end
-      attributes[key.to_s.camelize.to_sym] = value
-      attributes.delete(key.to_s.underscore.to_sym)
+      tmp[key.to_s.camelize.to_sym] = value
     end
-    
+    attributes = tmp
     data = attributes.to_json
     params = "Object=LinkObject&Method=LinkAdd&Data=#{data}"
     a = connect(params)
@@ -48,10 +47,11 @@ class OTRS::Link < OTRS
   def self.where(attributes)
     # Returns list of link objects as Source => Target
     # Haven't decided if I want this to return the link object or what is being linked to
+    tmp = {}
     attributes.each do |key,value|
-      attributes[key.to_s.camelize.to_sym] = value
-      attributes.delete(key.to_s.underscore.to_sym)
+      tmp[key.to_s.camelize.to_sym] = value
     end
+    attributes = tmp
     data = attributes.to_json
     params = "Object=LinkObject&Method=LinkKeyList&Data=#{data}"
     a = connect(params)

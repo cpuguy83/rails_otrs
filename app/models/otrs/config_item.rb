@@ -17,10 +17,11 @@ class OTRS::ConfigItem < OTRS
   
   def self.where(attributes)
     terms = ""
+    tmp = {}
     attributes.each do |key,value|
-      attributes[key.to_s.camelize.to_sym] = value
-      attributes.delete(key.to_s.underscore.to_sym)
+      tmp[key.to_s.camelize.to_sym] = value
     end
+    attributes = tmp
     data = attributes.to_json
     params = "Object=ConfigItem&Method=ConfigItemSearchExtended&Data=#{data}"
     a = connect(params).flatten

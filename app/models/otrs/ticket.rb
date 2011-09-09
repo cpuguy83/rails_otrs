@@ -93,10 +93,11 @@ class OTRS::Ticket < OTRS
   
   
   def self.where(attributes)
+    tmp = {}
     attributes.each do |key,value|
-      attributes[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
-      attributes.delete(key.to_s.underscore.to_sym)                            #Deletes the ruby style key as we don't want this to go to OTRS
+      tmp[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
     end
+    attributes = tmp
     terms = attributes.to_json
     params = "Object=TicketObject&Method=TicketSearch&Data=#{terms}"
     a = connect(params)
