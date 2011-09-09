@@ -2,6 +2,7 @@ class OTRS
   include ActiveModel::Conversion
   include ActiveModel::Naming
   include ActiveModel::Validations
+
   
   # @@otrs_host is the address where the OTRS server presides
   @@otrs_host = '10.0.0.11'
