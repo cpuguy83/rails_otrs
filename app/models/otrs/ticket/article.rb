@@ -6,7 +6,7 @@ class OTRS::Ticket::Article < OTRS::Ticket
   
   def initialize(attributes = {})
     attributes.each do |name, value|
-      #OTRS::Ticket::Article.set_accessors(name.to_s.underscore)
+      OTRS::Ticket::Article.set_accessors(name.to_s.underscore)
       send("#{name.to_s.underscore.to_sym}=", value)
     end
   end

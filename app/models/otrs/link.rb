@@ -11,11 +11,35 @@ class OTRS::Link < OTRS
     end
   end
   
-  def create(source_object_class, source_object_key, target_object_class, target_object_key, type)
-    params = "Object=LinkObject&Method=LinkAdd&Data={\"SourceObject\":\"#{source_object_class}\",\"SourceKey\":\"#{source_object_key}\",\"TargetObject\":\"#{target_object_class}\",\"TargetKey\":\"#{target_object_key}\",\"Type\":\"#{type}\",\"State\":\"Valid\",\"UserID\":\"1\"}"
+  def attributes
+    attributes = {}
+    self.instance_variables.each do |v|
+      attributes[v.to_s.gsub('@','').to_sym] = self.instance_variable_get(v)
+    end
+    attributes
+  end
+  
+  def save
+    self.class.create(self.attributes)
+  end
+  
+  def self.create(attributes)
+    attributes[:state] ||= 'Valid'
+    attributes[:user_id] ||= 1
+    
+    attributes.each do |key,value|
+      if key == :user_id
+        attributes[:UserID] = value
+      end
+      attributes[key.to_s.camelize.to_sym] = value
+      attributes.delete(key.to_s.underscore.to_sym)
+    end
+    
+    data = attributes.to_json
+    params = "Object=LinkObject&Method=LinkAdd&Data=#{data}"
     a = connect(params)
     if a.first == "1"
-      @attributes = {"Source" => source_object_key, "Target" => target_object_key}
+      self.where(attributes).first
     else
       raise "ERROR::FailedToCreateObject"
     end
@@ -44,4 +68,8 @@ class OTRS::Link < OTRS
     b
   end
   
+  def where(attributes)
+    self.class.where(attributes)
+  end
+
 end

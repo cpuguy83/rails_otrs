@@ -25,33 +25,49 @@ class OTRS::Ticket < OTRS
   end
   
   def attributes
-    @attributes
+    attributes = {}
+    self.instance_variables.each do |v|
+      attributes[v.to_s.gsub('@','').to_sym] = self.instance_variable_get(v)
+    end
+    attributes
   end
   
   def save
-    create(self.attributes)
+    self.create(self.attributes)
   end
   
-  def create(attributes={})
-    @otrs_type ||= 'Incident'
-    @state ||= 'new'
-    @queue ||= 'Service Desk'
-    @lock ||= 'unlock'
-    @priority ||= '3 normal'
-    @user_id ||= '1'
-    @owner_id ||= @user_id
-    
-    # Put validations here because they are not working using the normal validation methods
-    if @title == nil then raise 'ERROR:Missing field title' end
-    if @body == nil then raise 'ERROR:Missing field body' end
-    if @email == nil then raise 'ERROR:Missing field email' end
-    
-    state_id = connect("Object=StateObject&Method=StateLookup&Data={\"State\":\"#{@state}\"}").first
-    params = "Object=TicketObject&Method=TicketCreate&Data={\"Title\":\"#{@title}\",\"Type\":\"#{@otrs_type}\",\"StateID\":\"#{state_id}\",\"Queue\":\"#{@queue}\",\"Lock\":\"#{@lock}\",\"Priority\":\"#{@priority}\",\"CustomerID\":\"#{@email}\",\"CustomerUser\":\"#{@email}\",\"OwnerID\":\"#{@owner_id}\",\"UserID\":\"#{@user_id}\"}"
+  def create(attributes)
+    attributes[:otrs_type] ||= 'Incident'
+    attributes[:state] ||= 'new'
+    attributes[:queue] ||= 'Service Desk'
+    attributes[:lock] ||= 'unlock'
+    attributes[:priority] ||= '3 normal'
+    attributes[:user_id] ||= '1'
+    attributes[:owner_id] ||= attributes[:user_id]
+    attributes.each do |key,value|
+      if key == :otrs_type
+        attributes[:Type] = value
+      end
+      if key == :user_id
+        attributes[:UserID] = value
+      end
+      if key == :owner_id
+        attributes[:OwnerID] = value
+      end
+      if key == :customer_id
+        attributes[:CustomerID] = value
+      end
+      if key != :user_id or key != :owner_id or key != :customer_id
+        attributes[key.to_s.camelize.to_sym] = value
+      end
+      attributes.delete(key.to_s.underscore.to_sym)
+    end
+    data = attributes.to_json
+    params = "Object=TicketObject&Method=TicketCreate&Data=#{data}"
     a = connect(params)
     ticket_id = a.first
-    b = OTRS::Ticket::Article.create(ticket_id, @body, @email, @title)
-    @ticket = self.class.find(ticket_id)
+    b = OTRS::Ticket::Article.create(ticket_id, attributes[:Body], attributes[:Email], attributes[:Title])
+    self.class.find(ticket_id)
   end
   
   def destroy
@@ -79,7 +95,7 @@ class OTRS::Ticket < OTRS
   def self.where(attributes)
     attributes.each do |key,value|
       attributes[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
-      attributes.delete(key)                            #Deletes the ruby style key as we don't want this to go to OTRS
+      attributes.delete(key.to_s.underscore.to_sym)                            #Deletes the ruby style key as we don't want this to go to OTRS
     end
     terms = attributes.to_json
     params = "Object=TicketObject&Method=TicketSearch&Data=#{terms}"

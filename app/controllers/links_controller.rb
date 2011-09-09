@@ -9,6 +9,7 @@ class LinksController < ApplicationController
     respond_to do |wants|
       wants.html # index.html.erb
       wants.xml  { render :xml => @links }
+      wants.json { render :json => @links }
     end
   end
 
@@ -18,6 +19,7 @@ class LinksController < ApplicationController
     respond_to do |wants|
       wants.html # show.html.erb
       wants.xml  { render :xml => @link }
+      wants.json { render :json => @link }
     end
   end
 
@@ -29,6 +31,7 @@ class LinksController < ApplicationController
     respond_to do |wants|
       wants.html # new.html.erb
       wants.xml  { render :xml => @link }
+      wants.json { render :json => @link }
     end
   end
 
@@ -46,9 +49,11 @@ class LinksController < ApplicationController
         flash[:notice] = 'Link was successfully created.'
         wants.html { redirect_to(@link) }
         wants.xml  { render :xml => @link, :status => :created, :location => @link }
+        wants.json { render :json => @link, :status => :created, :location => @link  }
       else
         wants.html { render :action => "new" }
         wants.xml  { render :xml => @link.errors, :status => :unprocessable_entity }
+        wants.json { render :json => @link.errors.full_messages, :status => :unprocessable_entity }
       end
     end
   end
@@ -61,9 +66,11 @@ class LinksController < ApplicationController
         flash[:notice] = 'Link was successfully updated.'
         wants.html { redirect_to(@link) }
         wants.xml  { head :ok }
+        wants.json { head :ok }
       else
         wants.html { render :action => "edit" }
         wants.xml  { render :xml => @link.errors, :status => :unprocessable_entity }
+        wants.json { render :json => @link.errors.full_messags, :status => :unprocessable_entity }
       end
     end
   end
@@ -76,6 +83,7 @@ class LinksController < ApplicationController
     respond_to do |wants|
       wants.html { redirect_to(links_url) }
       wants.xml  { head :ok }
+      wants.json { head :ok }
     end
   end
 

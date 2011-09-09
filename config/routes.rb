@@ -3,8 +3,10 @@ Otrs::Application.routes.draw do
     resources :tickets do
       resource :articles
     end
+    resources :config_items
   end
   resources :tickets
   resources :links
   resources :config_items
+  resources :articles
 end
