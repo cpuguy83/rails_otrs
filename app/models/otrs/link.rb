@@ -47,6 +47,7 @@ class OTRS::Link < OTRS
   def self.where(attributes)
     # Returns list of link objects as Source => Target
     # Haven't decided if I want this to return the link object or what is being linked to
+    attributes[:state] ||= 'Valid'
     tmp = {}
     attributes.each do |key,value|
       tmp[key.to_s.camelize.to_sym] = value
