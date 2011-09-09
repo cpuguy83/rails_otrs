@@ -44,24 +44,25 @@ class OTRS::Ticket < OTRS
     attributes[:priority] ||= '3 normal'
     attributes[:user_id] ||= '1'
     attributes[:owner_id] ||= attributes[:user_id]
+    tmp = {}
     attributes.each do |key,value|
       if key == :otrs_type
-        attributes[:Type] = value
+        tmp[:Type] = value
       end
       if key == :user_id
-        attributes[:UserID] = value
+        tmp[:UserID] = value
       end
       if key == :owner_id
-        attributes[:OwnerID] = value
+        tmp[:OwnerID] = value
       end
       if key == :customer_id
-        attributes[:CustomerID] = value
+        tmp[:CustomerID] = value
       end
       if key != :user_id or key != :owner_id or key != :customer_id
-        attributes[key.to_s.camelize.to_sym] = value
+        tmp[key.to_s.camelize.to_sym] = value
       end
-      attributes.delete(key.to_s.underscore.to_sym)
     end
+    attributes = tmp
     data = attributes.to_json
     params = "Object=TicketObject&Method=TicketCreate&Data=#{data}"
     a = connect(params)
