@@ -69,7 +69,7 @@ class OTRS::Ticket < OTRS
     a = connect(params)
     ticket_id = a.first
     b = OTRS::Ticket::Article.create(ticket_id, attributes[:Body], attributes[:Email], attributes[:Title])
-    self.class.find(ticket_id)
+    @ticket = self.class.find(ticket_id)
   end
   
   def destroy
