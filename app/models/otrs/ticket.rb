@@ -61,6 +61,7 @@ class OTRS::Ticket < OTRS
       if key != :user_id or key != :owner_id or key != :customer_id
         tmp[key.to_s.camelize.to_sym] = value
       end
+
     end
     attributes = tmp
     data = attributes.to_json
