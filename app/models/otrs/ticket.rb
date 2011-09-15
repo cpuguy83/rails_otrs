@@ -69,7 +69,12 @@ class OTRS::Ticket < OTRS
     a = connect(params)
     ticket_id = a.first
     b = OTRS::Ticket::Article.create(ticket_id, attributes[:Body], attributes[:Email], attributes[:Title])
-    @ticket = self.class.find(ticket_id)
+    ticket = self.class.find(ticket_id)
+    attributes = ticket.attributes
+    attributes.each do |key,value|
+      instance_variable_set "@#{key.to_s}", value
+    end
+    ticket
   end
   
   def destroy
@@ -100,8 +105,8 @@ class OTRS::Ticket < OTRS
       tmp[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
     end
     attributes = tmp
-    terms = attributes.to_json
-    params = "Object=TicketObject&Method=TicketSearch&Data=#{terms}"
+    data = attributes.to_json
+    params = "Object=TicketObject&Method=TicketSearch&Data=#{data}"
     a = connect(params)
     b = Hash[*a]          # Converts array to hash where key = TicketID and value = TicketNumber, which is what gets returned by OTRS
     c = []
