@@ -40,7 +40,7 @@ class OTRS::Link < OTRS
     if a.first == "1"
       self.where(attributes).first
     else
-      raise "ERROR::FailedToCreateObject"
+      raise "ERROR::FailedToCreateLinkObject"
     end
   end
   
