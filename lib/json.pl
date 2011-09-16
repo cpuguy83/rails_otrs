@@ -3,7 +3,7 @@
 # bin/cgi-bin/json.pl - json handle
 # Copyright (C) 2001-2010 OTRS AG, http://otrs.org/
 # --
-# $Id: json.pl,v 1.12.2.1 2010/09/23 17:51:10 cr Exp $
+# $Id: json.pl,v 1.13 2010/09/23 17:51:02 cr Exp $
 # --
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU AFFERO General Public License as published by
@@ -49,11 +49,14 @@ use Kernel::System::Ticket;
 use Kernel::System::LinkObject;
 use Kernel::System::JSON;
 use Kernel::System::iPhone;
-
 use Kernel::System::Web::Request;
+use Kernel::System::ITSMConfigItem;
+use Kernel::System::ITSMChange;
+use Kernel::System::ITSMChange::ITSMWorkOrder;
+use Kernel::System::ITSMChange::ITSMStateMachine;
 
 use vars qw($VERSION);
-$VERSION = qw($Revision: 1.12.2.1 $) [1];
+$VERSION = qw($Revision: 1.13 $) [1];
 
 my $Self = Core->new();
 print "Content-Type: text/plain; \n";
@@ -99,6 +102,10 @@ sub Dispatch {
     $Self->{JSONObject}         = Kernel::System::JSON->new( %{$Self} );
     $Self->{ParamObject}        = Kernel::System::Web::Request->new( %{$Self} );
     $Self->{iPhoneObject}       = Kernel::System::iPhone->new( %{$Self} );
+    $Self->{ConfigItemObject}   = Kernel::System::ITSMConfigItem->new( %{$Self} );
+    $Self->{ChangeObject}	= Kernel::System::ITSMChange->new( %{$Self} );
+    $Self->{WorkOrderObject}	= Kernel::System::ITSMChange::ITSMWorkOrder->new( %{$Self} );
+    $Self->{StateMachineObject}	= Kernel::System::ITSMChange::ITSMStateMachine->new( %{$Self} );
 
     # get log filename
     if ( $Self->{ConfigObject}->Get('iPhone::LogFile') ) {
