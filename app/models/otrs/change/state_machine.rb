@@ -25,7 +25,7 @@ class OTRS::Change::StateMachine < OTRS::Change
   end
   
   def self.all
-    params = "Object=StateMachine&Method=StateList&Data={\"Class\":\"#{@@class}\",\"UserID\":\"1\"}"
+    params = "Object=StateMachineObject&Method=StateList&Data={\"Class\":\"#{@@class}\",\"UserID\":\"1\"}"
     a = connect(params).flatten
     b = []
     a.each do |c|
@@ -43,7 +43,7 @@ class OTRS::Change::StateMachine < OTRS::Change
   end
   
   def next_state
-    params = "Object=StateMachine&Method=StateTransitionGet&Data={\"StateID\":\"#{id}\",\"Class\":\"#{@@class}\"}"
+    params = "Object=StateMachineObject&Method=StateTransitionGet&Data={\"StateID\":\"#{id}\",\"Class\":\"#{@@class}\"}"
     a = connect(params).flatten
     b = []
     a.each do |c|

@@ -35,7 +35,7 @@ class OTRS::Change < OTRS
     attributes = tmp
     attributes[:UserID] = '1'
     data = attributes.to_json
-    params = "Object=Change&Method=ChangeAdd&Data=#{data}"
+    params = "Object=ChangeObject&Method=ChangeAdd&Data=#{data}"
     a = connect(params)
     id = a.first
     a = self.class.find(id)
@@ -46,7 +46,7 @@ class OTRS::Change < OTRS
   end
     
   def self.find(id)
-    params = "Object=Change&Method=ChangeGet&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+    params = "Object=ChangeObject&Method=ChangeGet&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
     a = connect(params)
     a = Hash[*a]
     self.new(a.symbolize_keys)
@@ -59,7 +59,7 @@ class OTRS::Change < OTRS
     end
     attributes = tmp
     data = attributes.to_json
-    params = "Object=Change&Method=ChangeSearch&Data=#{data}"
+    params = "Object=ChangeObject&Method=ChangeSearch&Data=#{data}"
     a = connect(params).flatten
     b = []
     a.each do |c|
@@ -71,7 +71,7 @@ class OTRS::Change < OTRS
   def destroy
     id = @change_id
     if self.class.find(id)
-      params = "Object=Change&Method=ChangeDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+      params = "Object=ChangeObject&Method=ChangeDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
       connect(params)
       "ChangeID #{id} deleted"
     else

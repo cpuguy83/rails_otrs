@@ -23,7 +23,7 @@ class OTRS::ConfigItem < OTRS
     end
     attributes = tmp
     data = attributes.to_json
-    params = "Object=ConfigItem&Method=ConfigItemSearchExtended&Data=#{data}"
+    params = "Object=ConfgItemObject&Method=ConfigItemSearchExtended&Data=#{data}"
     a = connect(params).flatten
     results = []
     a.each do |b|
@@ -33,11 +33,11 @@ class OTRS::ConfigItem < OTRS
   end
   
   def self.find(id)
-    params = "Object=ConfigItem&Method=ConfigItemGet&Data={\"ConfigItemID\":\"#{id}\"}"
+    params = "Object=ConfgItemObject&Method=ConfigItemGet&Data={\"ConfigItemID\":\"#{id}\"}"
     a = connect(params).first
     class_id = a["ClassID"]
     version_id = a["LastVersionID"]
-    params2 = "Object=ConfigItem&Method=_XMLVersionGet&Data={\"ClassID\":\"#{class_id}\",\"VersionID\":\"#{version_id}\"}"
+    params2 = "Object=ConfgItemObject&Method=_XMLVersionGet&Data={\"ClassID\":\"#{class_id}\",\"VersionID\":\"#{version_id}\"}"
     b = connect(params2)
     b = b.flatten
     b = b[1]

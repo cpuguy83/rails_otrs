@@ -37,7 +37,7 @@ class OTRS::Change::WorkOrder < OTRS::Change
     attributes[:ChangeID] = attributes[:ChangeId]
     attributes.delete(:ChangeId)
     data = attributes.to_json
-    params = "Object=WorkOrder&Method=WorkOrderAdd&Data=#{data}"
+    params = "Object=WorkOrderObject&Method=WorkOrderAdd&Data=#{data}"
     a = connect(params)
     id = a.first
     a = self.class.find(id)
@@ -48,7 +48,7 @@ class OTRS::Change::WorkOrder < OTRS::Change
   end
   
   def self.find(id)
-    params = "Object=WorkOrder&Method=WorkOrderGet&Data={\"WorkOrderID\":\"#{id}\",\"UserID\":\"1\"}"
+    params = "Object=WorkOrderObject&Method=WorkOrderGet&Data={\"WorkOrderID\":\"#{id}\",\"UserID\":\"1\"}"
     a = connect(params)
     a = Hash[*a]
     self.new(a.symbolize_keys)
@@ -57,7 +57,7 @@ class OTRS::Change::WorkOrder < OTRS::Change
   def destroy
     id = @change_id
     if self.class.find(id)
-      params = "Object=WorkOrder&Method=WorkOrderDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+      params = "Object=WorkOrderObject&Method=WorkOrderDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
       connect(params)
       "WorkOrderID #{id} deleted"
     else
