@@ -5,7 +5,7 @@ class OTRS
 
   
   # @@otrs_host is the address where the OTRS server presides
-  @@otrs_host = '10.0.0.11'
+  @@otrs_host = 'localhost'
   # api_url is the base URL used to connect to the json api of OTRS, this will be the custom json.pl as the standard doesn't include ITSM module
   @@otrs_api_url = "https://#{@@otrs_host}/otrs/json.pl"
   # Username / password combo should be an actual OTRS agent defined on the OTRS server
