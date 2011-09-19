@@ -60,10 +60,10 @@ class OTRS::Link < OTRS
     b = []
     a.each do |key,value|
       c = {}
-      c[:target_id] = "#{key}"
-      c[:target_object] = attributes[:Object2]
-      c[:source_object] = attributes[:Object1]
-      c[:source_id] = attributes[:Key1]
+      c[:key2] = "#{key}"
+      c[:object2] = attributes[:Object2]
+      c[:object1] = attributes[:Object1]
+      c[:key1] = attributes[:Key1]
       b << self.new(c)
     end
     b
