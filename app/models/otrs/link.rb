@@ -73,4 +73,10 @@ class OTRS::Link < OTRS
     self.class.where(attributes)
   end
 
+  def destroy
+    @type ||= 'Normal'
+    params="Object=LinkObject&Method=LinkDelete&Data={\"Object1\":\"#{@object1}\",\"Key1\":\"#{@key1}\",\"Object2\":\"#{@object2}\",\"Key2\":\"#{@key2}\",\"Type\":\"#{@type}\"}"
+    a = connect(params)
+  end
+
 end
