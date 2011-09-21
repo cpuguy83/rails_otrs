@@ -12,7 +12,7 @@ class OTRS::Ticket::Article < OTRS::Ticket
   end
   
   def self.create(ticket_id, body, email, title)
-    params = "Object=TicketObject&Method=ArticleCreate&Data={\"TicketID\":\"#{ticket_id}\",\"UserID\":\"1\",\"ArticleType\":\"note-internal\",\"SenderType\":\"agent\",\"From\":\"#{email}\",\"Subject\":\"#{title}\",\"Body\":\"#{body}\",\"HistoryType\":\"AddNote\",\"HistoryComment\":\" \",\"ContentType\":\"text/plain\"}"
+    params = "Object=TicketObject&Method=ArticleCreate&Data={\"TicketID\":\"#{ticket_id}\",\"UserID\":\"1\",\"ArticleType\":\"email-internal\",\"SenderType\":\"agent\",\"From\":\"#{email}\",\"Subject\":\"#{title}\",\"Body\":\"#{body}\",\"HistoryType\":\"AddNote\",\"HistoryComment\":\" \",\"ContentType\":\"text/plain\"}"
     connect(params)
   end
   
