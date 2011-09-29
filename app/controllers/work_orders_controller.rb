@@ -39,11 +39,11 @@ class WorkOrdersController < ApplicationController
   # POST /workOrders
   # POST /workOrders.xml
   def create
-    @work_order = OTRS::Change::WorkOrder.new(params[:workOrder])
+    @work_order = OTRS::Change::WorkOrder.new(params[:work_order])
 
     respond_to do |wants|
       if @work_order.save
-        flash[:notice] = 'WorkOrder was successfully created.'
+        flash[:notice] = 'Work Order was successfully created.'
         wants.html { redirect_to(@work_order) }
         wants.json  { render :json => @work_order, :status => :created, :location => @work_order }
       else
@@ -57,8 +57,8 @@ class WorkOrdersController < ApplicationController
   # PUT /workOrders/1.xml
   def update
     respond_to do |wants|
-      if @work_order.update_attributes(params[:workOrder])
-        flash[:notice] = 'WorkOrder was successfully updated.'
+      if @work_order.update_attributes(params[:work_order])
+        flash[:notice] = 'Work Order was successfully updated.'
         wants.html { redirect_to(@work_order) }
         wants.json  { head :ok }
       else
