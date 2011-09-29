@@ -7,6 +7,7 @@ Otrs::Application.routes.draw do
       resource :work_orders
     end
     resources :config_items
+    resources :services
   end
   resources :ticket_queues
   resources :tickets
@@ -17,4 +18,5 @@ Otrs::Application.routes.draw do
   resources :articles
   resources :changes
   resources :work_orders
+  resources :services
 end
