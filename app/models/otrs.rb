@@ -32,8 +32,12 @@ class OTRS
   def self.connect(params)
     require 'net/https'
     base_url = self.api_url
-    logon = "User=#{self.user}&Password=#{self.password}"
-    uri = URI.parse("#{base_url}?#{URI.encode(logon)}&#{URI.encode(params)}")
+    logon = URI.encode("User=#{self.user}&Password=#{self.password}")
+    object = URI.encode(params[:object])
+    method = URI.encode(params[:method])
+    data = params[:data].to_json
+    data = URI.escape(data, '{}[]: &"')
+    uri = URI.parse("#{base_url}?#{logon}&Object=#{object}&Method=#{method}&Data=#{data}")
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true

@@ -10,18 +10,33 @@ class OTRS::ConfigItem < OTRS
   
   def initialize(attributes = {})
     attributes.each do |name, value|
+      # cannot have numbers at beginning of field name
+      if name =~ /^\d+/
+        front_numbers = name[/^\d+/]
+        name = name.gsub(/^\d+/,'') + front_numbers
+      end
+      if name =~ / /
+        name = name.gsub(' ','_')
+      end
+      if name =~ /-/
+        name = name.gsub('-','')
+      end
       OTRS::ConfigItem.set_accessor(name)
       send("#{name.to_sym}=", value)
     end
   end
   
   def self.definition(definition_id)
-    params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"DefinitionID\":\"#{definition_id}\"}"
+    #params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"DefinitionID\":\"#{definition_id}\"}"
+    data = { 'DefinitionID' => definition_id }
+    params = { :object => 'ConfigItemObject', :method => 'DefinitionGet', :data => data }
     a = connect(params).first
   end
   
   def self.class_definition(class_id)
-    params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"ClassID\":\"#{class_id}\"}"
+    #params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"ClassID\":\"#{class_id}\"}"
+    data = { 'ClassID' => class_id }
+    params = { :object => 'ConfigItemObject', :method => 'DefinitionGet', :data => data }
     a = connect(params).first.first.second.gsub(';','')
     ActiveSupport::JSON.decode(a)
     #a
@@ -49,12 +64,15 @@ class OTRS::ConfigItem < OTRS
   end
   
   def create(attributes)
-    params = "Object=ConfigItemObject&Method=ConfigItemAdd&Data={\"ClassID\":\"#{self.ClassID}\",\"UserID\":\"1\"}"
+    #params = "Object=ConfigItemObject&Method=ConfigItemAdd&Data={\"ClassID\":\"#{self.ClassID}\",\"UserID\":\"1\"}"
+    data = { 'ClassID' => self.ClassID, 'UserID' => 1 }
+    params = { :object => 'ConfigItemObject', :method => 'ConfigItemAdd', :data => data }
     a = self.class.connect(params)
     attributes[:ConfigItemID] = a.first
     attributes[:XMLData] = self.class.to_otrs_xml(attributes)
-    data = attributes.to_json
-    params2 = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
+    data2 = attributes
+    #params2 = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
+    params2 = { :object => 'ConfigItemObject', :method => 'VersionAdd', :data => data2 }
     b = self.class.connect(params2)
     new_version_id = b.first
     config_item = self.class.find(attributes[:ConfigItemID])
@@ -66,14 +84,13 @@ class OTRS::ConfigItem < OTRS
   end
   
   def self.where(attributes)
-    terms = ""
     tmp = {}
     attributes.each do |key,value|
       tmp[key.to_s.camelize.to_sym] = value
     end
-    attributes = tmp
-    data = attributes.to_json
-    params = "Object=ConfigItemObject&Method=ConfigItemSearchExtended&Data=#{data}"
+    data = tmp
+    #params = "Object=ConfigItemObject&Method=ConfigItemSearchExtended&Data=#{data}"
+    params = { :object => 'ConfigItemObject', :method => 'ConfigItemSearchExtended', :data => data }
     a = connect(params).flatten
     results = []
     a.each do |b|
@@ -83,32 +100,10 @@ class OTRS::ConfigItem < OTRS
   end
   
   def self.to_otrs_xml(attributes)
-    xml = attributes.except(:config_item_id,
-      :Name, 
-      :DeplStateID, 
-      :InciStateID, 
-      :DefinitionID,
-      :CreateTime,
-      :ChangeBy,
-      :ChangeTime,
-      :Class,
-      :ClassID,
-      :ConfigItemID,
-      :CreateBy,
-      :CreateTime,
-      :CurDeplState,
-      :CurDeplStateID,
-      :CurDeplStateType,
-      :CurInciState,
-      :CurInciStateID,
-      :CurIncistateType,
-      :DeplState,
-      :DeplStateType,
-      :InciState,
-      :InciStateType,
-      :LastVersionID,
-      :Number,
-      :VersionID)
+    xml = attributes.except(:config_item_id,:Name,:DeplStateID,:InciStateID,:DefinitionID,
+      :CreateTime,:ChangeBy,:ChangeTime,:Class,:ClassID,:ConfigItemID,:CreateBy,:CreateTime,
+      :CurDeplState,:CurDeplStateID,:CurDeplStateType,:CurInciState,:CurInciStateID,:CurIncistateType,
+      :DeplState,:DeplStateType,:InciState,:InciStateType,:LastVersionID,:Number,:VersionID)
     xml_hash = {}
     xml_data = [nil, { 'Version' => xml_hash }]
     tmp = []
@@ -150,11 +145,14 @@ class OTRS::ConfigItem < OTRS
       end
     end
     updated_attributes[:XMLData] = self.class.to_otrs_xml(updated_attributes)
-    data = updated_attributes.to_json
-    params = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
+    data = updated_attributes
+    #params = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
+    params = { :object => 'ConfigItemObject', :method => 'VersionAdd', :data => data }
     a = self.class.connect(params)
     new_version_id = a.first
-    params2 = "Object=ConfigItemObject&Method=VersionConfigItemIDGet&Data={\"VersionID\":\"#{new_version_id}\"}"
+    #params2 = "Object=ConfigItemObject&Method=VersionConfigItemIDGet&Data={\"VersionID\":\"#{new_version_id}\"}"
+    data = { 'VersionID' => new_version_id }
+    params2 = { :object => 'ConfigItemObject', :method => 'VersionConfigItemIDGet', :data => data }
     b = self.class.connect(params2)
     config_item = self.class.find(b.first)
     attributes = config_item.attributes
@@ -165,11 +163,15 @@ class OTRS::ConfigItem < OTRS
   end
   
   def self.find(id)
-    params = "Object=ConfigItemObject&Method=ConfigItemGet&Data={\"ConfigItemID\":\"#{id}\"}"
+    data = { 'ConfigItemID' => id }
+    #params = "Object=ConfigItemObject&Method=ConfigItemGet&Data={\"ConfigItemID\":\"#{id}\"}"
+    params = { :object => 'ConfigItemObject', :method => 'ConfigItemGet', :data => data }
     a = connect(params).first
     class_id = a["ClassID"]
     version_id = a["LastVersionID"]
-    params2 = "Object=ConfigItemObject&Method=_XMLVersionGet&Data={\"ClassID\":\"#{class_id}\",\"VersionID\":\"#{version_id}\"}"
+    data2 = { 'ClassID' => class_id, 'VersionID' => version_id }
+    #params2 = "Object=ConfigItemObject&Method=_XMLVersionGet&Data={\"ClassID\":\"#{class_id}\",\"VersionID\":\"#{version_id}\"}"
+    params2 = { :object => 'ConfigItemObject', :method => '_XMLVersionGet', :data => data2 }
     b = connect(params2).first[1].flatten[1][1].except("TagKey")
     tmp = {}
     b.each do |key,value|
@@ -202,7 +204,9 @@ class OTRS::ConfigItem < OTRS
         end
       end
     end
-    params3 = "Object=ConfigItemObject&Method=VersionGet&Data={\"ConfigItemID\":\"#{id}\",\"XMLDataGet\":\"0\"}"
+    data3 = { 'ConfigItemID' => id, 'XMLDataGet' => 0 }
+    #params3 = "Object=ConfigItemObject&Method=VersionGet&Data={\"ConfigItemID\":\"#{id}\",\"XMLDataGet\":\"0\"}"
+    params3 = { :object => 'ConfigItemObject', :method => 'VersionGet', :data => data3 }
     c = connect(params3).first
     self.new(a.merge(c).merge(tmp))
   end

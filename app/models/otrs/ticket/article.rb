@@ -11,20 +11,31 @@ class OTRS::Ticket::Article < OTRS::Ticket
     end
   end
   
-  def self.create(ticket_id, body, email, title)
-    params = "Object=TicketObject&Method=ArticleCreate&Data={\"TicketID\":\"#{ticket_id}\",\"UserID\":\"1\",\"ArticleType\":\"email-internal\",\"SenderType\":\"agent\",\"From\":\"#{email}\",\"Subject\":\"#{title}\",\"Body\":\"#{body}\",\"HistoryType\":\"AddNote\",\"HistoryComment\":\" \",\"ContentType\":\"text/plain\"}"
+  def self.create(attributes)
+    data = { 'TicketID' => attributes[:ticket_id], 'UserID' => 1, 'From' => attributes[:email], 'Subject' => attributes[:title], 'Body', => attributes[:body] }
+    data['ArticleType'] ||= 'email-external'
+    data['SenderType'] ||= 'agent'
+    data['HistoryType'] ||= 'NewTicket'
+    data['HistoryComment'] ||= ''
+    data['ContentType'] ||= 'text/plain'
+    data = data.to_json
+    params = { :object => 'TicketObject', :method => 'ArticleCreate', :data => data }
     connect(params)
   end
   
   def self.find(id)
-    params = "Object=TicketObject&Method=ArticleGet&Data={\"ArticleID\":\"#{id}\",\"UserID\":\"1\"}"
+    data = { 'ArticleID' => id, 'UserID' => 1 }
+    #params = "Object=TicketObject&Method=ArticleGet&Data={\"ArticleID\":\"#{id}\",\"UserID\":\"1\"}"
+    params = { :object => 'TicketObject', :method => 'ArticleGet', :data => data }
     a = connect(params)
     a = Hash[*a].symbolize_keys
     self.new(a)
   end
   
   def self.where(ticket_id)
-    params="Object=TicketObject&Method=ArticleIndex&Data={\"TicketID\":\"#{ticket_id}\"}"
+    data = { 'TicketID' => ticket_id }
+    #params="Object=TicketObject&Method=ArticleIndex&Data={\"TicketID\":\"#{ticket_id}\"}"
+    params = { :object => 'TicketObject', :method => 'ArticleIndex', :data => data }
     a = connect(params)
     b = []
     a.each do |c|

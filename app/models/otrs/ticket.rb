@@ -20,7 +20,9 @@ class OTRS::Ticket < OTRS
   end
   
   def self.ticket_number_lookup(ticket_id)
-    params = "Object=TicketObject&Method=TicketNumberLookup&Data={\"TicketID\":\"#{ticket_id}\",\"UserID\":\"1\"}"
+    data = { 'TicketID' => ticket_id, 'UserID' => 1 }
+    #params = "Object=TicketObject&Method=TicketNumberLookup&Data={\"TicketID\":\"#{ticket_id}\",\"UserID\":\"1\"}"
+    params = { :object => 'TicketObject', :method => 'TicketNumberLookup', :data => data }
     connect(params).first
   end
   
@@ -64,11 +66,14 @@ class OTRS::Ticket < OTRS
 
     end
     attributes = tmp
-    data = attributes.to_json
-    params = "Object=TicketObject&Method=TicketCreate&Data=#{data}"
+    data = attributes
+    #params = "Object=TicketObject&Method=TicketCreate&Data=#{data}"
+    params = { :object => 'TicketObject', :method => 'TicketCreate', :data => data }
     a = connect(params)
     ticket_id = a.first
     b = OTRS::Ticket::Article.create(ticket_id, attributes[:Body], attributes[:Email], attributes[:Title])
+    article_attributes = { :ticket_id => ticket_id, :body => attributes[:Body], :email => attributes[:email], title => attributes[:Title] }
+    b = OTRS::Ticket::Article.create(article_attributes)
     ticket = self.class.find(ticket_id)
     attributes = ticket.attributes
     attributes.each do |key,value|
@@ -80,7 +85,9 @@ class OTRS::Ticket < OTRS
   def destroy
     id = @ticket_id
     if self.class.find(id)
-      params = "Object=TicketObject&Method=TicketDelete&Data={\"TicketID\":\"#{id}\",\"UserID\":\"1\"}"
+      data = { 'TicketID' => id, 'UserID' => 1 }
+      #params = "Object=TicketObject&Method=TicketDelete&Data={\"TicketID\":\"#{id}\",\"UserID\":\"1\"}"
+      params = { :object => 'TicketObject', :method => 'TicketDelete', :data => data }
       connect(params)
       "Ticket ID: #{id} deleted"
     else
@@ -89,7 +96,9 @@ class OTRS::Ticket < OTRS
   end
   
   def self.find(id)
-    params = "Object=TicketObject&Method=TicketGet&Data={\"TicketID\":\"#{id}\",\"UserID\":\"1\"}"
+    data = { 'TicketID' => id, 'UserID' => 1 }
+    #params = "Object=TicketObject&Method=TicketGet&Data={\"TicketID\":\"#{id}\",\"UserID\":\"1\"}"
+    params = { :object => 'TicketObject', :method => 'TicketGet', :data => data }
     a = Hash[*connect(params)]
     if a.empty? == false
       self.new(a.symbolize_keys)
@@ -106,7 +115,8 @@ class OTRS::Ticket < OTRS
     end
     attributes = tmp
     data = attributes.to_json
-    params = "Object=TicketObject&Method=TicketSearch&Data=#{data}"
+    #params = "Object=TicketObject&Method=TicketSearch&Data=#{data}"
+    params = { :object => 'TicketObject', :method => 'TicketSearch', :data => data }
     a = connect(params)
     b = Hash[*a]          # Converts array to hash where key = TicketID and value = TicketNumber, which is what gets returned by OTRS
     c = []

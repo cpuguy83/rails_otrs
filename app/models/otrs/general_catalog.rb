@@ -28,8 +28,10 @@ class OTRS::GeneralCatalog < OTRS
   end
   
   def self.find(id)
-    params="Object=GeneralCatalogObject&Method=ItemGet&Data={\"ItemID\":\"#{id}\"}"
-    a = connect(params).first.except('Class') # Class field is causing issues
+    #params="Object=GeneralCatalogObject&Method=ItemGet&Data={\"ItemID\":\"#{id}\"}"
+    data = { 'ItemID' => id }
+    params = { :object => 'GeneralCatalogObject', :method => 'ItemGet', :data => data }
+    a = connect(params).first.except('Class') ## Class field is causing issues in Rails
     self.new(a)
   end
   

@@ -15,7 +15,9 @@ class OTRS::Ticket::TicketQueue < OTRS::Ticket # Namespace conflict with OTRS::T
   end
   
   def self.all
-    params = 'Object=QueueObject&Method=QueueList&Data={"UserID":"1"}'
+    data = { 'UserID' => 1 }
+    #params = 'Object=QueueObject&Method=QueueList&Data={"UserID":"1"}'
+    params = { :object => 'QueueObject', :method => 'QueueList', :data => data }
     a = connect(params)
     a = Hash[*a]
     b = []

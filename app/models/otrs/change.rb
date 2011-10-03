@@ -34,8 +34,8 @@ class OTRS::Change < OTRS
     end
     attributes = tmp
     attributes[:UserID] = '1'
-    data = attributes.to_json
-    params = "Object=ChangeObject&Method=ChangeAdd&Data=#{data}"
+    data = attributes
+    params = { :object => 'ChangeObject', :method => 'ChangeAdd', :data => data }
     a = connect(params)
     id = a.first
     a = self.class.find(id)
@@ -46,7 +46,9 @@ class OTRS::Change < OTRS
   end
     
   def self.find(id)
-    params = "Object=ChangeObject&Method=ChangeGet&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+    #params = "Object=ChangeObject&Method=ChangeGet&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+    data = { 'ChangeID' => id, 'UserID' => 1 }
+    params = { :object => 'ChangeObject', :method => 'ChangeGet', :data => data }
     a = connect(params)
     a = Hash[*a]
     self.new(a.symbolize_keys)
@@ -58,8 +60,9 @@ class OTRS::Change < OTRS
       tmp[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
     end
     attributes = tmp
-    data = attributes.to_json
-    params = "Object=ChangeObject&Method=ChangeSearch&Data=#{data}"
+    data = attributes
+    #params = "Object=ChangeObject&Method=ChangeSearch&Data=#{data}"
+    params = { :objecct => 'ChangeObject', :method => 'ChageGet', :data => data }
     a = connect(params).flatten
     b = []
     a.each do |c|
@@ -71,7 +74,9 @@ class OTRS::Change < OTRS
   def destroy
     id = @change_id
     if self.class.find(id)
-      params = "Object=ChangeObject&Method=ChangeDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+      data = { 'ChangeID' => id, 'UserID' => 1 }
+      #params = "Object=ChangeObject&Method=ChangeDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
+      params = { :object => 'ChangeObject', :method => 'ChangeDelete', :data => data }
       connect(params)
       "ChangeID #{id} deleted"
     else

@@ -16,7 +16,9 @@ class OTRS::Ticket::State < OTRS::Ticket
   end
   
   def self.all
-    params = 'Object=StateObject&Method=StateList&Data={"UserID":"1"}'
+    data => { 'UserID' => 1 }
+    #params = 'Object=StateObject&Method=StateList&Data={"UserID":"1"}'
+    params = { :object => 'StateObject', :method => 'StateList', :data => data }
     a = connect(params)
     a = Hash[*a]
     b = []

@@ -25,7 +25,9 @@ class OTRS::Change::State < OTRS::Change
   end
   
   def self.all
-    params = "Object=StateMachineObject&Method=StateList&Data={\"Class\":\"#{@@class}\",\"UserID\":\"1\"}"
+    #params = "Object=StateMachineObject&Method=StateList&Data={\"Class\":\"#{@@class}\",\"UserID\":\"1\"}"
+    data = { 'Class' => @@class, 'UserID' => 1 }
+    params = { :object => 'StateMachineObject', :method => 'StateList', :data => data
     a = connect(params).flatten
     b = []
     a.each do |c|

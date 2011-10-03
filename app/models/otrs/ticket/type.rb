@@ -16,7 +16,9 @@ class OTRS::Ticket::Type < OTRS::Ticket
   end
   
   def self.all
-    params = 'Object=TicketObject&Method=TicketTypeList&Data={"UserID":"1"}'
+    data = { 'UserID' => 1 }
+    #params = 'Object=TicketObject&Method=TicketTypeList&Data={"UserID":"1"}'
+    params = { :object => 'TicketObject', :method => 'TicketTypeList', :data => data }
     a = connect(params)
     a = Hash[*a]
     b = []

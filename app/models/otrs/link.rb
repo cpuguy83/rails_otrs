@@ -34,8 +34,9 @@ class OTRS::Link < OTRS
       tmp[key.to_s.camelize.to_sym] = value
     end
     attributes = tmp
-    data = attributes.to_json
-    params = "Object=LinkObject&Method=LinkAdd&Data=#{data}"
+    data = attributes
+    #params = "Object=LinkObject&Method=LinkAdd&Data=#{data}"
+    params = { :object => 'LinkObject', :method => 'LinkAdd', :data => data }
     a = connect(params)
     if a.first == "1"
       self.where(attributes).first
@@ -52,9 +53,9 @@ class OTRS::Link < OTRS
     attributes.each do |key,value|
       tmp[key.to_s.camelize.to_sym] = value
     end
-    attributes = tmp
-    data = attributes.to_json
-    params = "Object=LinkObject&Method=LinkKeyList&Data=#{data}"
+    data = tmp
+    #params = "Object=LinkObject&Method=LinkKeyList&Data=#{data}"
+    params = { :object => 'LinkObject', :method => 'LinkKeyList', :data => data }
     a = connect(params)
     a = Hash[*a]
     b = []
@@ -75,7 +76,9 @@ class OTRS::Link < OTRS
 
   def destroy
     @type ||= 'Normal'
-    params="Object=LinkObject&Method=LinkDelete&Data={\"Object1\":\"#{@object1}\",\"Key1\":\"#{@key1}\",\"Object2\":\"#{@object2}\",\"Key2\":\"#{@key2}\",\"Type\":\"#{@type}\"}"
+    data = { 'Object1' => @object1, :key1 => @key1, :object2 => @object2, key2 => @key2, :type => @type }
+    #params = "Object=LinkObject&Method=LinkDelete&Data={\"Object1\":\"#{@object1}\",\"Key1\":\"#{@key1}\",\"Object2\":\"#{@object2}\",\"Key2\":\"#{@key2}\",\"Type\":\"#{@type}\"}"
+    params = { :object => 'LinkObject', :method => 'LinkDelete', :data => data }
     a = connect(params)
   end
 

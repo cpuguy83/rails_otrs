@@ -16,7 +16,9 @@ class OTRS::Service < OTRS
   end
   
   def self.find(id)
-    params = "Object=ServiceObject&Method=ServiceGet&Data={\"ServiceID\":\"#{id}\",\"UserID\":\"1\"}"
+    #params = "Object=ServiceObject&Method=ServiceGet&Data={\"ServiceID\":\"#{id}\",\"UserID\":\"1\"}"
+    data = { 'ServiceID' => id, 'UserID' => 1 }
+    params = { :object => 'ServiceObject', :method => 'ServiceGet', :data => data }
     a = Hash[*connect(params)]
       if a.empty? == false
         self.new(a.symbolize_keys)
@@ -31,8 +33,9 @@ class OTRS::Service < OTRS
       tmp[key.to_s.camelize.to_sym] = value
     end
     attributes = tmp
-    data = attributes.to_json
-    params = "Object=ServiceObject&Method=ServiceSearch&Data=#{data}"
+    data = attributes
+    #params = "Object=ServiceObject&Method=ServiceSearch&Data=#{data}"
+    params = { :object => 'ServiceObject', :method => 'ServiceSearch', :data => data }
     a = connect(params)
     results = []
     a.each do |s|
@@ -81,8 +84,9 @@ class OTRS::Service < OTRS
       end
     end
     attributes = tmp
-    data = attributes.to_json
-    params = "Object=ServiceObject&Method=ServiceAdd&Data=#{data}"
+    data = attributes
+    #params = "Object=ServiceObject&Method=ServiceAdd&Data=#{data}"
+    params = { :object => 'ServiceObject', :method => 'ServiceAdd', :data => data }
     a = connect(params)
     service_id = a.first
     unless service_id.nil?
@@ -104,8 +108,9 @@ class OTRS::Service < OTRS
     end
     attributes = tmp
     attributes[:UserID] = 1
-    data = attributes.to_json
-    params = "Object=ServiceObject&Method=ServiceSearch&Data=#{data}"
+    data = attributes
+    #params = "Object=ServiceObject&Method=ServiceSearch&Data=#{data}"
+    params = { :object => 'ServiceObject', :method => 'ServiceSearch', :data => data }
     a = connect(params)
     b = []
     a.each do |id|
