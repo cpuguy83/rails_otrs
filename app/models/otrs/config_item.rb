@@ -21,7 +21,7 @@ class OTRS::ConfigItem < OTRS
       if name =~ /-/
         name = name.gsub('-','')
       end
-      OTRS::ConfigItem.set_accessor(name)
+      self.class.set_accessor(name)
       send("#{name.to_sym}=", value)
     end
   end
