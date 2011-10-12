@@ -10,7 +10,7 @@ class OTRS::Change < OTRS
   
   def initialize(attributes = {})
     attributes.each do |name, value|
-      OTRS::Change.set_accessor(name.to_s.underscore)
+      self.class.set_accessor(name.to_s.underscore)
       send("#{name.to_s.underscore.to_sym}=", value)
     end
   end
@@ -46,7 +46,6 @@ class OTRS::Change < OTRS
   end
     
   def self.find(id)
-    #params = "Object=ChangeObject&Method=ChangeGet&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
     data = { 'ChangeID' => id, 'UserID' => 1 }
     params = { :object => 'ChangeObject', :method => 'ChangeGet', :data => data }
     a = connect(params)
@@ -57,12 +56,10 @@ class OTRS::Change < OTRS
   def self.where(attributes)
     tmp = {}
     attributes.each do |key,value|
-      tmp[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
+      tmp[key.to_s.camelize] = value      #Copies ruby style keys to camel case for OTRS
     end
-    attributes = tmp
-    data = attributes
-    #params = "Object=ChangeObject&Method=ChangeSearch&Data=#{data}"
-    params = { :objecct => 'ChangeObject', :method => 'ChageGet', :data => data }
+    data = tmp
+    params = { :object => 'ChangeObject', :method => 'ChangeSearch', :data => data }
     a = connect(params).flatten
     b = []
     a.each do |c|
@@ -71,11 +68,26 @@ class OTRS::Change < OTRS
     b
   end
   
+  def update_attributes(attributes)
+    tmp = {}
+    attributes.each do |key,value|
+      tmp[key.to_s.camelize] = value      #Copies ruby style keys to camel case for OTRS
+    end
+    tmp['ChangeID'] = @change_id
+    data = tmp
+    params = { :object => 'ChangeObject', :method => 'ChangeUpdate', :data => data }
+    a = connect(params)
+    if a.first.nil?
+      nil
+    else
+      return self
+    end
+  end
+  
   def destroy
     id = @change_id
     if self.class.find(id)
       data = { 'ChangeID' => id, 'UserID' => 1 }
-      #params = "Object=ChangeObject&Method=ChangeDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
       params = { :object => 'ChangeObject', :method => 'ChangeDelete', :data => data }
       connect(params)
       "ChangeID #{id} deleted"
