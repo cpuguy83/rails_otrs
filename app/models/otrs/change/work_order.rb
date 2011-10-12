@@ -37,20 +37,39 @@ class OTRS::Change::WorkOrder < OTRS::Change
     attributes[:ChangeID] = attributes[:ChangeId]
     attributes.delete(:ChangeId)
     data = attributes
-    #params = "Object=WorkOrderObject&Method=WorkOrderAdd&Data=#{data}"
     params = { :object => 'WorkOrderObject', :method => 'WorkOrderAdd', :data => data }
     a = connect(params)
     id = a.first
-    a = self.class.find(id)
-    attributes = a.attributes
+    if id.nil?
+      nil
+    else
+      b = self.class.find(id)
+      attributes = b.attributes
+      attributes.each do |key,value|
+        instance_variable_set "@#{key.to_s}", value
+      end
+      b
+    end
+  end
+  
+  def update_attributes(attributes)
+    tmp = {}
     attributes.each do |key,value|
-      instance_variable_set "@#{key.to_s}", value
+      tmp[key.to_s.camelize] = value      #Copies ruby style keys to camel case for OTRS
+    end
+    tmp['WorkOrderID'] = @work_order_id
+    data = tmp
+    params = { :object => 'WorkOrderObject', :method => 'WorkOrderUpdate', :data => data }
+    a = connect(params)
+    if a.first.nil?
+      nil
+    else
+      return self
     end
   end
   
   def self.find(id)
-    data => { 'WorkOrderID' => id, 'UserID' => 1 }
-    #params = "Object=WorkOrderObject&Method=WorkOrderGet&Data={\"WorkOrderID\":\"#{id}\",\"UserID\":\"1\"}"
+    data = { 'WorkOrderID' => id, 'UserID' => 1 }
     params = { :object => 'WorkOrderObject', :method => 'WorkOrderGet', :data => data }
     a = connect(params)
     a = Hash[*a]
@@ -61,7 +80,6 @@ class OTRS::Change::WorkOrder < OTRS::Change
     id = @change_id
     if self.class.find(id)
       data = { 'ChangeID' => id, 'UserID' => 1 }
-      #params = "Object=WorkOrderObject&Method=WorkOrderDelete&Data={\"ChangeID\":\"#{id}\",\"UserID\":\"1\"}"
       params = { :object => 'WorkOrderObject', :method => 'WorkOrderDelete', :data => data }
       connect(params)
       "WorkOrderID #{id} deleted"
