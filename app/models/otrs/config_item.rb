@@ -11,45 +11,12 @@ class OTRS::ConfigItem < OTRS
   def initialize(attributes = {})
     attributes.each do |name, value|
       # cannot have numbers at beginning of field name
-      if name =~ /^\d+/
-        front_numbers = name[/^\d+/]
-        name = name.gsub(/^\d+/,'') + front_numbers
+      unless name =~ /^\d+/ or name =~ / / or name =~ /-/
+        self.class.set_accessor(name)
+        send("#{name.to_sym}=", value)
       end
-      if name =~ / /
-        name = name.gsub(' ','_')
-      end
-      if name =~ /-/
-        name = name.gsub('-','')
-      end
-      self.class.set_accessor(name)
-      send("#{name.to_sym}=", value)
     end
   end
-  
-  def self.definition(definition_id)
-    #params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"DefinitionID\":\"#{definition_id}\"}"
-    data = { 'DefinitionID' => definition_id }
-    params = { :object => 'ConfigItemObject', :method => 'DefinitionGet', :data => data }
-    a = connect(params).first
-  end
-  
-  def self.class_definition(class_id)
-    #params = "Object=ConfigItemObject&Method=DefinitionGet&Data={\"ClassID\":\"#{class_id}\"}"
-    data = { 'ClassID' => class_id }
-    params = { :object => 'ConfigItemObject', :method => 'DefinitionGet', :data => data }
-    a = connect(params).first.first.second.gsub(';','')
-    ActiveSupport::JSON.decode(a)
-    #a
-  end
-  
-  def class_definition
-    self.class.definition(self.ClassID)
-  end
-    
-  def definition
-    self.class.definition(self.DefinitionID)
-  end
-  
   
   def attributes
     attributes = {}
@@ -100,9 +67,9 @@ class OTRS::ConfigItem < OTRS
   end
   
   def self.to_otrs_xml(attributes)
-    xml = attributes.except(:config_item_id,:Name,:DeplStateID,:InciStateID,:DefinitionID,
+    xml = attributes.except(:Name,:DeplStateID,:InciStateID,:DefinitionID,
       :CreateTime,:ChangeBy,:ChangeTime,:Class,:ClassID,:ConfigItemID,:CreateBy,:CreateTime,
-      :CurDeplState,:CurDeplStateID,:CurDeplStateType,:CurInciState,:CurInciStateID,:CurIncistateType,
+      :CurDeplState,:CurDeplStateID,:CurDeplStateType,:CurInciState,:CurInciStateID,:CurInciStateType,
       :DeplState,:DeplStateType,:InciState,:InciStateType,:LastVersionID,:Number,:VersionID)
     xml_hash = {}
     xml_data = [nil, { 'Version' => xml_hash }]
@@ -114,25 +81,28 @@ class OTRS::ConfigItem < OTRS
     # Order keys properly so they are parsed in the correct order
     tmp.sort! { |x,y| x <=> y }
     tmp.each do |key|
-      if key =~ /__0\d+\Z/
-        xml_key = key.gsub(/__0\d+\Z/,'').camelize
-        tag_key = key[/__\d+\Z/][/\d+/].gsub(/^0/,'').to_i + 1
+      keys = key.split(/__/)
+      xml_key = keys[0]
+      unless keys[1].nil? then tag_key = keys[1].gsub(/^0/,'').to_i + 1 end
+      xml_subkey = keys[2]
+      case key
+      when /^[aA-zZ]+__0\d+__[aA-zZ]+__0\d+$/
+        if xml_hash[xml_key][tag_key][xml_subkey].nil?
+          xml_hash[xml_key][tag_key][xml_subkey] = [nil, { "Content" => xml[key.to_sym] }]
+        else
+          xml_hash[xml_key][tag_key][xml_subkey] << { "Content" => xml[key.to_sym] }
+        end
+      when /^[aA-zZ]+__0\d+__[aA-zZ]$/
+        xml_hash[xml_key][tag_key][xml_subkey] = xml[key.to_sym]
+      when /^[aA-zZ]+__0\d+$/
         if xml_hash[xml_key].nil?
           xml_hash[xml_key] = [nil] 
         end
         xml_hash[xml_key] << { "Content" => xml[key.to_sym] }
-      elsif key =~ /__0\d+__/
-        xml_key = key.split(/__\d+__/).first.camelize
-        xml_subkey = key.split(/__\d+__/).second.camelize
-        tag_key = key[/__\d+__/][/\d+/].gsub(/^0/,'').to_i + 1
-        xml_hash[xml_key][tag_key][xml_subkey] = xml[key.to_sym]
-      elsif key =~ /[a-z]__/
-        xml_key = key.split('__').first.camelize
-        xml_subkey = key.split('__').second.camelize
-        if xml_hash[xml_key].nil? then xml_hash[xml_key] = [1] end
+      when /^[aA-zZ]+__[aA-zZ]$/
         xml_hash[xml_key][1][xml_subkey] = xml[key.to_sym]
-      else
-        xml_hash[key.camelize] = [ nil, { "Content" => xml[key.to_sym] }]
+      when /^[aA-zZ]+$/
+        xml_hash[xml_key] = [ nil, { "Content" => xml[key.to_sym] }]
       end
     end
     xml_data
@@ -145,14 +115,21 @@ class OTRS::ConfigItem < OTRS
       end
     end
     updated_attributes[:XMLData] = self.class.to_otrs_xml(updated_attributes)
+    xml_attributes = self.attributes.except(:Name,:DeplStateID,:InciStateID,:DefinitionID,
+      :CreateTime,:ChangeBy,:ChangeTime,:Class,:ClassID,:ConfigItemID,:CreateBy,:CreateTime,
+      :CurDeplState,:CurDeplStateID,:CurDeplStateType,:CurInciState,:CurInciStateID,:CurInciStateType,
+      :DeplState,:DeplStateType,:InciState,:InciStateType,:LastVersionID,:Number,:VersionID)
+    xml_attributes.each do |key,value|
+      updated_attributes = updated_attributes.except(key)
+    end
     data = updated_attributes
-    #params = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
+    params = "Object=ConfigItemObject&Method=VersionAdd&Data=#{data}"
     params = { :object => 'ConfigItemObject', :method => 'VersionAdd', :data => data }
     a = self.class.connect(params)
     new_version_id = a.first
-    #params2 = "Object=ConfigItemObject&Method=VersionConfigItemIDGet&Data={\"VersionID\":\"#{new_version_id}\"}"
-    data = { 'VersionID' => new_version_id }
-    params2 = { :object => 'ConfigItemObject', :method => 'VersionConfigItemIDGet', :data => data }
+    params2 = "Object=ConfigItemObject&Method=VersionConfigItemIDGet&Data={\"VersionID\":\"#{new_version_id}\"}"
+    data2 = { 'VersionID' => new_version_id }
+    params2 = { :object => 'ConfigItemObject', :method => 'VersionConfigItemIDGet', :data => data2 }
     b = self.class.connect(params2)
     config_item = self.class.find(b.first)
     attributes = config_item.attributes
@@ -162,53 +139,63 @@ class OTRS::ConfigItem < OTRS
     config_item
   end
   
-  def self.find(id)
-    data = { 'ConfigItemID' => id }
-    #params = "Object=ConfigItemObject&Method=ConfigItemGet&Data={\"ConfigItemID\":\"#{id}\"}"
-    params = { :object => 'ConfigItemObject', :method => 'ConfigItemGet', :data => data }
-    a = connect(params).first
-    class_id = a["ClassID"]
-    version_id = a["LastVersionID"]
-    data2 = { 'ClassID' => class_id, 'VersionID' => version_id }
-    #params2 = "Object=ConfigItemObject&Method=_XMLVersionGet&Data={\"ClassID\":\"#{class_id}\",\"VersionID\":\"#{version_id}\"}"
-    params2 = { :object => 'ConfigItemObject', :method => '_XMLVersionGet', :data => data2 }
-    b = connect(params2).first[1].flatten[1][1].except("TagKey")
-    tmp = {}
-    b.each do |key,value|
-    # This chunk of code is parsing the data returned by the XML get
-    # It has to first check and see if there are multiple entries for the same field name
-    # If so it produces fields with a count tacked on the end so they can be properly tracked
-    # From there it checks to see if there are custom fields within this field entry beyond just the main content
-      b[key].delete(b[key][0])
-      count = b[key].count
+  def self.from_otrs_xml(xml)
+    xml = xml.first[1].flatten[1][1].except("TagKey")
+    data = {}
+    xml.each do |key,value|
+      xml[key].delete(xml[key][0])
+      count = xml[key].count
       if count == 1
-        tmp[key] = value[count - 1]["Content"]
+        data[key] = value[count - 1]["Content"]
         count2 = value[count -1].except("Content","TagKey").count
         if count2 >= 1
-          value[count -1].except("Content","TagKey").each do |key2,value2|
+          value[count - 1].except("Content","TagKey").each do |key2,value2|
             value2.delete(value2[0])
-            tmp["#{key}__#{key2}"] = value2[0]["Content"]
+            data["#{key}__#{key2}"] = value2[0]["Content"]
           end
         end
       else
         while count != 0
-          tmp["#{key}__0#{count - 1}"] = value[count - 1]["Content"]
-          count3 = value[count - 1].except("Content","TagKey").count
+          data["#{key}__0#{count - 1}"] = value[count - 1]["Content"]
+          count3 = value[count - 1].except("TagKey").count
           if count3 > 1
             value[count - 1].except("Content","TagKey").each do |key3,value3|
               value3.delete(value3[0])
-              tmp["#{key}__0#{count - 1}__#{key3}"] = value3[0]["Content"]
+              count4 = value3.count
+              if count4 > 1
+                while count4 != 0
+                  unless value3[count4 - 1]["Content"].nil?
+                    data["#{key}__0#{count - 1}__#{key3}__0#{count4 - 1}"] = value3[count4 - 1]["Content"]
+                  end
+                  count4 = count4 - 1
+                end
+                
+              else
+                data["#{key}__0#{count - 1}__#{key3}"] = value3[0]["Content"]
+              end
             end
           end
           count = count - 1
         end
       end
     end
+    data
+  end
+  
+  def self.find(id)
+    data = { 'ConfigItemID' => id }
+    params = { :object => 'ConfigItemObject', :method => 'ConfigItemGet', :data => data }
+    a = connect(params).first
+    class_id = a["ClassID"]
+    version_id = a["LastVersionID"]
+    data2 = { 'ClassID' => class_id, 'VersionID' => version_id }
+    params2 = { :object => 'ConfigItemObject', :method => '_XMLVersionGet', :data => data2 }
+    b = connect(params2)
+    b = self.from_otrs_xml(b)
     data3 = { 'ConfigItemID' => id, 'XMLDataGet' => 0 }
-    #params3 = "Object=ConfigItemObject&Method=VersionGet&Data={\"ConfigItemID\":\"#{id}\",\"XMLDataGet\":\"0\"}"
     params3 = { :object => 'ConfigItemObject', :method => 'VersionGet', :data => data3 }
     c = connect(params3).first
-    self.new(a.merge(c).merge(tmp))
+    self.new(a.merge(c).merge(b))
   end
   
 end
