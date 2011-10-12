@@ -24,6 +24,10 @@ class OTRS::Link < OTRS
   end
   
   def self.create(attributes)
+    attributes[:source_object] = attributes[:object1]
+    attributes[:target_object] = attributes[:object2]
+    attributes[:source_key] = attributes[:key1]
+    attributes[:target_key] = attributes[:key2]
     attributes[:state] ||= 'Valid'
     attributes[:user_id] ||= 1
     tmp = {}
@@ -31,17 +35,15 @@ class OTRS::Link < OTRS
       if key == :user_id
         tmp[:UserID] = value
       end
-      tmp[key.to_s.camelize.to_sym] = value
+      tmp[key.to_s.camelize] = value
     end
-    attributes = tmp
-    data = attributes
-    #params = "Object=LinkObject&Method=LinkAdd&Data=#{data}"
+    data = tmp
     params = { :object => 'LinkObject', :method => 'LinkAdd', :data => data }
     a = connect(params)
     if a.first == "1"
-      self.where(attributes).first
+      return self
     else
-      raise "ERROR::FailedToCreateLinkObject"
+      nil
     end
   end
   
@@ -54,7 +56,6 @@ class OTRS::Link < OTRS
       tmp[key.to_s.camelize.to_sym] = value
     end
     data = tmp
-    #params = "Object=LinkObject&Method=LinkKeyList&Data=#{data}"
     params = { :object => 'LinkObject', :method => 'LinkKeyList', :data => data }
     a = connect(params)
     a = Hash[*a]
@@ -62,9 +63,9 @@ class OTRS::Link < OTRS
     a.each do |key,value|
       c = {}
       c[:key2] = "#{key}"
-      c[:object2] = attributes[:Object2]
-      c[:object1] = attributes[:Object1]
-      c[:key1] = attributes[:Key1]
+      c[:object2] = tmp[:Object2]
+      c[:object1] = tmp[:Object1]
+      c[:key1] = tmp[:Key1]
       b << self.new(c)
     end
     b
