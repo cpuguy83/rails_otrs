@@ -8,6 +8,7 @@ Otrs::Application.routes.draw do
     end
     resources :config_items
     resources :services
+    resources :links
   end
   resources :ticket_queues
   resources :tickets

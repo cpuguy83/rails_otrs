@@ -36,7 +36,6 @@ class OTRS
     object = URI.encode(params[:object])
     method = URI.encode(params[:method])
     data = params[:data].to_json
-    #data = URI.encode(data, '-={}[] &"#\'?\u00a0')
     data = URI.encode(data)
     data = URI.escape(data, '=\',\\/+-&?#.;')
     uri = URI.parse("#{base_url}?#{logon}&Object=#{object}&Method=#{method}&Data=#{data}")

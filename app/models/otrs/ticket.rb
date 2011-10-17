@@ -67,26 +67,31 @@ class OTRS::Ticket < OTRS
     end
     attributes = tmp
     data = attributes
-    #params = "Object=TicketObject&Method=TicketCreate&Data=#{data}"
     params = { :object => 'TicketObject', :method => 'TicketCreate', :data => data }
     a = connect(params)
     ticket_id = a.first
-    b = OTRS::Ticket::Article.create(ticket_id, attributes[:Body], attributes[:Email], attributes[:Title])
-    article_attributes = { :ticket_id => ticket_id, :body => attributes[:Body], :email => attributes[:email], title => attributes[:Title] }
-    b = OTRS::Ticket::Article.create(article_attributes)
-    ticket = self.class.find(ticket_id)
-    attributes = ticket.attributes
-    attributes.each do |key,value|
-      instance_variable_set "@#{key.to_s}", value
+    article = OTRS::Ticket::Article.new(
+      :ticket_id => ticket_id, 
+      :body => attributes[:Body], 
+      :email => attributes[:Email], 
+      :title => attributes[:Title])
+    if article.save
+      ticket = self.class.find(ticket_id)
+      attributes = ticket.attributes
+      attributes.each do |key,value|
+        instance_variable_set "@#{key.to_s}", value
+      end
+      ticket
+    else
+      ticket.destroy
+      raise 'Could not create ticket'
     end
-    ticket
   end
   
   def destroy
     id = @ticket_id
     if self.class.find(id)
       data = { 'TicketID' => id, 'UserID' => 1 }
-      #params = "Object=TicketObject&Method=TicketDelete&Data={\"TicketID\":\"#{id}\",\"UserID\":\"1\"}"
       params = { :object => 'TicketObject', :method => 'TicketDelete', :data => data }
       connect(params)
       "Ticket ID: #{id} deleted"
@@ -109,13 +114,7 @@ class OTRS::Ticket < OTRS
   
   
   def self.where(attributes)
-    tmp = {}
-    attributes.each do |key,value|
-      tmp[key.to_s.camelize.to_sym] = value      #Copies ruby style keys to camel case for OTRS
-    end
-    attributes = tmp
-    data = attributes.to_json
-    #params = "Object=TicketObject&Method=TicketSearch&Data=#{data}"
+    data = attributes
     params = { :object => 'TicketObject', :method => 'TicketSearch', :data => data }
     a = connect(params)
     b = Hash[*a]          # Converts array to hash where key = TicketID and value = TicketNumber, which is what gets returned by OTRS

@@ -4,6 +4,10 @@ class OTRS::Link < OTRS
     attr_accessor key.to_sym
   end
   
+  def persisted?
+    false
+  end
+  
   def initialize(attributes = {})
     attributes.each do |name, value|
       OTRS::Link.set_accessors(name.to_s.underscore)
