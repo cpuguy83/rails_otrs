@@ -49,19 +49,27 @@ use Kernel::System::Ticket;
 use Kernel::System::LinkObject;
 use Kernel::System::JSON;
 use Kernel::System::iPhone;
-use Kernel::System::Web::Request;
 use Kernel::System::ITSMConfigItem;
+use Kernel::System::Web::Request;
 use Kernel::System::ITSMChange;
 use Kernel::System::ITSMChange::ITSMWorkOrder;
 use Kernel::System::ITSMChange::ITSMStateMachine;
+use Kernel::System::GeneralCatalog;
+use Kernel::System::XML;
+use Custom::Envu::Kernel::System::Service;
+use Custom::Envu::Kernel::System::Ticket;
+use Custom::Envu::Kernel::System::ITSMConfigItem;
+use Custom::Envu::Kernel::System::ITSMChange;
+use Custom::Envu::Kernel::System::ITSMChange::ITSMWorkOrder;
 
 use vars qw($VERSION);
 $VERSION = qw($Revision: 1.13 $) [1];
 
 my $Self = Core->new();
+my $r = shift;
 print "Content-Type: text/plain; \n";
 print "\n";
-print $Self->Dispatch();
+$r->print($Self->Dispatch());
 
 package Core;
 
@@ -85,27 +93,34 @@ sub Dispatch {
         LogPrefix => 'OTRS-RPC',
         %{$Self},
     );
-    $Self->{MainObject}         = Kernel::System::Main->new( %{$Self} );
-    $Self->{DBObject}           = Kernel::System::DB->new( %{$Self} );
-    $Self->{TimeObject}         = Kernel::System::Time->new( %{$Self} );
-    $Self->{UserObject}         = Kernel::System::User->new( %{$Self} );
-    $Self->{GroupObject}        = Kernel::System::Group->new( %{$Self} );
-    $Self->{QueueObject}        = Kernel::System::Queue->new( %{$Self} );
-    $Self->{ServiceObject}      = Kernel::System::Service->new( %{$Self} );
-    $Self->{TypeObject}         = Kernel::System::Type->new( %{$Self} );
-    $Self->{StateObject}        = Kernel::System::State->new( %{$Self} );
-    $Self->{LockObject}         = Kernel::System::Lock->new( %{$Self} );
-    $Self->{SLAObject}          = Kernel::System::SLA->new( %{$Self} );
-    $Self->{CustomerUserObject} = Kernel::System::CustomerUser->new( %{$Self} );
-    $Self->{TicketObject}       = Kernel::System::Ticket->new( %{$Self} );
-    $Self->{LinkObject}         = Kernel::System::LinkObject->new( %{$Self} );
-    $Self->{JSONObject}         = Kernel::System::JSON->new( %{$Self} );
-    $Self->{ParamObject}        = Kernel::System::Web::Request->new( %{$Self} );
-    $Self->{iPhoneObject}       = Kernel::System::iPhone->new( %{$Self} );
-    $Self->{ConfigItemObject}   = Kernel::System::ITSMConfigItem->new( %{$Self} );
-    $Self->{ChangeObject}	= Kernel::System::ITSMChange->new( %{$Self} );
-    $Self->{WorkOrderObject}	= Kernel::System::ITSMChange::ITSMWorkOrder->new( %{$Self} );
-    $Self->{StateMachineObject}	= Kernel::System::ITSMChange::ITSMStateMachine->new( %{$Self} );
+    $Self->{MainObject}           = Kernel::System::Main->new( %{$Self} );
+    $Self->{DBObject}             = Kernel::System::DB->new( %{$Self} );
+    $Self->{TimeObject}           = Kernel::System::Time->new( %{$Self} );
+    $Self->{UserObject}           = Kernel::System::User->new( %{$Self} );
+    $Self->{GroupObject}          = Kernel::System::Group->new( %{$Self} );
+    $Self->{QueueObject}          = Kernel::System::Queue->new( %{$Self} );
+    $Self->{ServiceObject}        = Kernel::System::Service->new( %{$Self} );
+    $Self->{TypeObject}           = Kernel::System::Type->new( %{$Self} );
+    $Self->{StateObject}          = Kernel::System::State->new( %{$Self} );
+    $Self->{LockObject}           = Kernel::System::Lock->new( %{$Self} );
+    $Self->{SLAObject}            = Kernel::System::SLA->new( %{$Self} );
+    $Self->{CustomerUserObject}   = Kernel::System::CustomerUser->new( %{$Self} );
+    $Self->{TicketObject}         = Kernel::System::Ticket->new( %{$Self} );
+    $Self->{LinkObject}           = Kernel::System::LinkObject->new( %{$Self} );
+    $Self->{JSONObject}           = Kernel::System::JSON->new( %{$Self} );
+    $Self->{ParamObject}          = Kernel::System::Web::Request->new( %{$Self} );
+    $Self->{iPhoneObject}         = Kernel::System::iPhone->new( %{$Self} );
+    $Self->{ConfigItemObject}     = Kernel::System::ITSMConfigItem->new( %{$Self} );
+    $Self->{ConfigItemObjectCustom} = Custom::Envu::Kernel::System::ITSMConfigItem->new( %{$Self} );
+    $Self->{ServiceObjectCustom}  = Custom::Envu::Kernel::System::Service->new( %{$Self} );
+    $Self->{TicketObjectCustom}   = Custom::Envu::Kernel::System::Ticket->new( %{$Self} );
+    $Self->{ChangeObject}         = Kernel::System::ITSMChange->new( %{$Self} );
+    $Self->{ChangeObjectCustom}   = Custom::Envu::Kernel::System::ITSMChange->new( %{$Self} );
+    $Self->{WorkOrderObject}      = Kernel::System::ITSMChange::ITSMWorkOrder->new( %{$Self} );
+    $Self->{WorkOrderObjectCustom} = Custom::Envu::Kernel::System::ITSMChange::ITSMWorkOrder->new( %{$Self} );
+    $Self->{StateMachineObject}   = Kernel::System::ITSMChange::ITSMStateMachine->new( %{$Self} );
+    $Self->{GeneralCatalogObject} = Kernel::System::GeneralCatalog->new( %{$Self} );
+    $Self->{XMLObject}            = Kernel::System::XML->new( %{$Self} );	
 
     # get log filename
     if ( $Self->{ConfigObject}->Get('iPhone::LogFile') ) {
